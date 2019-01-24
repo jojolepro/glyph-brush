@@ -142,6 +142,7 @@ impl<'font, H: BuildHasher> GlyphBrush<'font, H> {
     where
         S: Into<Cow<'a, VariedSection<'a>>>,
     {
+	    profile_scope!("glyph_brush_queue");
         let section = section.into();
         let layout = section.layout;
         self.queue_custom_layout(section, &layout)
@@ -159,6 +160,7 @@ impl<'font, H: BuildHasher> GlyphBrush<'font, H> {
     where
         L: GlyphPositioner,
     {
+	    profile_scope!("glyph_brush_cache_glyphs");
         let section_hash = self.hash(&(section, layout));
 
         if self.cache_glyph_positioning {
@@ -225,6 +227,7 @@ impl<'font, H: BuildHasher> GlyphBrush<'font, H> {
         F1: FnMut(Rect<u32>, &[u8]),
         F2: Fn(GlyphVertex) -> V,
     {
+	    profile_scope!("glyph_brush_process_queue");
         let current_text_state = self.hash(&(&self.section_buffer, screen_w, screen_h));
 
         let result = if !self.cache_glyph_drawing || self.last_draw.text_state != current_text_state

@@ -1,6 +1,7 @@
 use gfx::{format, Device};
 use gfx_glyph::*;
 use std::{env, error::Error};
+use thread_profiler::*;
 
 const MAX_FONT_SIZE: f32 = 4000.0;
 
@@ -8,7 +9,8 @@ fn main() -> Result<(), Box<dyn Error>> {
     if env::var("RUST_LOG").is_err() {
         env::set_var("RUST_LOG", "gfx_glyph=warn");
     }
-
+	register_thread_with_profiler();
+	
     env_logger::init();
 
     if cfg!(target_os = "linux") {
@@ -146,5 +148,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     }
     println!();
+	write_profile("thread_profiler.json");
     Ok(())
 }

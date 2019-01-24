@@ -13,8 +13,9 @@ readme="README.md"
 backtrace = "0.3"
 gfx = "0.17"
 gfx_core = "0.8"
-glyph_brush = { version = "0.2", path = "../glyph-brush" }
+glyph_brush = { version = "0.2", path = "../glyph-brush", features = ["profiler"] }
 log = "0.4"
+thread_profiler = { version = "0.3", features = ["thread_profiler"] }
 
 [dev-dependencies]
 env_logger = { version = "0.6", default-features = false }
@@ -24,3 +25,6 @@ gfx_window_glutin = "0.28"
 glutin = "0.19"
 cgmath = "0.16"
 spin_sleep = "0.3"
+
+[features]
+profiler = [ "thread_profiler/thread_profiler" ]

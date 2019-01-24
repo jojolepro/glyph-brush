@@ -33,6 +33,9 @@
 //! # Ok(())
 //! # }
 //! ```
+#[macro_use]
+extern crate thread_profiler;
+
 mod glyph_brush;
 mod glyph_calculator;
 mod owned_section;

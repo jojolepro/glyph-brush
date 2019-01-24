@@ -16,6 +16,7 @@ ordered-float = "1"
 full_rusttype = { version = "0.7", features = ["gpu_cache"], package = "rusttype" }
 seahash = "3"
 hashbrown = "0.1"
+thread_profiler = { version = "0.3", features = ["thread_profiler"] }
 
 [dev-dependencies]
 env_logger = { version = "0.6", default-features = false }
@@ -23,3 +24,6 @@ lazy_static = "1"
 gl = "0.11"
 glutin = "0.19"
 spin_sleep = "0.3"
+
+[features]
+profiler = [ "thread_profiler/thread_profiler" ]

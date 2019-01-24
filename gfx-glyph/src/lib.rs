@@ -37,6 +37,10 @@
 //! # Ok(())
 //! # }
 //! ```
+
+#[macro_use]
+extern crate thread_profiler;
+
 mod builder;
 mod pipe;
 #[macro_use]
@@ -268,6 +272,7 @@ impl<'font, R: gfx::Resources, F: gfx::Factory<R>, H: BuildHasher> GlyphBrush<'f
         CV: RawAndFormat<Raw = RawRenderTargetView<R>>,
         DV: RawAndFormat<Raw = RawDepthStencilView<R>>,
     {
+	    profile_scope!("glyph_brush_draw_queued");
         self.draw_queued_with_transform(IDENTITY_MATRIX4, encoder, target, depth_target)
     }
 
@@ -330,7 +335,9 @@ impl<'font, R: gfx::Resources, F: gfx::Factory<R>, H: BuildHasher> GlyphBrush<'f
 
         loop {
             let tex = self.font_cache_tex.0.clone();
-
+			
+			{
+			profile_scope!("glyph_brush_draw_queued_process_queued");
             brush_action = self.glyph_brush.process_queued(
                 screen_dims,
                 |rect, tex_data| {
@@ -340,6 +347,7 @@ impl<'font, R: gfx::Resources, F: gfx::Factory<R>, H: BuildHasher> GlyphBrush<'f
                 },
                 to_vertex,
             );
+			}
 
             match brush_action {
                 Ok(_) => break,
@@ -381,9 +389,16 @@ impl<'font, R: gfx::Resources, F: gfx::Factory<R>, H: BuildHasher> GlyphBrush<'f
 
         match brush_action.unwrap() {
             BrushAction::Draw(verts) => {
-                let vbuf = self.factory.create_vertex_buffer(&verts);
+				profile_scope!("glyph_brush_draw_queued_brush_action");
+				
+				let vbuf = {
+					profile_scope!("glyph_brush_draw_queued_brush_action_vertex_buf");
+					println!("verts size: {}", verts.len());
+					self.factory.create_vertex_buffer(&verts)
+				};
 
                 let draw_cache = if let Some(mut cache) = self.draw_cache.take() {
+					profile_scope!("glyph_brush_draw_queued_brush_action_some_cache");
                     cache.pipe_data.vbuf = vbuf;
                     if &cache.pipe_data.out != target.as_raw() {
                         cache.pipe_data.out.clone_from(target.as_raw());
@@ -400,6 +415,7 @@ impl<'font, R: gfx::Resources, F: gfx::Factory<R>, H: BuildHasher> GlyphBrush<'f
                     cache.slice.instances.as_mut().unwrap().0 = verts.len() as _;
                     cache
                 } else {
+					profile_scope!("glyph_brush_draw_queued_brush_action_none_cache");
                     DrawnGlyphBrush {
                         pipe_data: {
                             let sampler = self.factory.create_sampler(texture::SamplerInfo::new(
@@ -437,6 +453,7 @@ impl<'font, R: gfx::Resources, F: gfx::Factory<R>, H: BuildHasher> GlyphBrush<'f
             ..
         }) = self.draw_cache.as_mut()
         {
+			profile_scope!("glyph_brush_draw_queued_encoder_draw");
             pipe_data.transform = transform;
             encoder.draw(slice, &pso.1, pipe_data);
         }
